@@ -42,15 +42,8 @@ public class ExceptionHandle extends ResponseEntityExceptionHandler {
 	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest request) {
 		List<Error> errors = new ArrayList<>();
+		errors.add(new Error("", ex.getRootCause().getMessage()));
 		
-		errors.add(new Error(ex.getCause().getLocalizedMessage(), ex.getMessage()));
-		
-//		for (ObjectError error : ex.get().getAllErrors()) {
-//			String field = ((FieldError) error).getField();
-//			String message = messageSource.getMessage(error, LocaleContextHolder.getLocale());
-//			
-//			errors.add(new Error(field, message));
-//		}
 		return super.handleExceptionInternal(ex, errors, headers, status, request);
 	}
 

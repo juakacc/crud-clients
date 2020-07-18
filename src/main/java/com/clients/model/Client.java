@@ -11,6 +11,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Entity
 public class Client {
 
@@ -28,6 +30,7 @@ public class Client {
 
 	@NotNull
 	@Column(name = "data_nascimento")
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date dataNascimento;
 
 	public Long getId() {
