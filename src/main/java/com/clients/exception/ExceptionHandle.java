@@ -72,6 +72,5 @@ public class ExceptionHandle extends ResponseEntityExceptionHandler {
 		public void setError(String error) {
 			this.error = error;
 		}
-
 	}
 }
