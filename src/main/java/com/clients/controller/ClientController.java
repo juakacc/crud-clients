@@ -2,9 +2,11 @@ package com.clients.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.clients.dto.ClientDTO;
 import com.clients.model.Client;
 import com.clients.repository.ClientRepository;
 
@@ -27,18 +30,21 @@ public class ClientController {
 
 	@Autowired
 	private ClientRepository repository;
+	
+	@Autowired
+	private ModelMapper modelMapper;
 
 	@GetMapping
-	public ResponseEntity<List<Client>> list() {
-		return ResponseEntity.ok(repository.findAll());
+	public ResponseEntity<List<ClientDTO>> list() {
+		return ResponseEntity.ok(this.toCollectionModel(repository.findAll()));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<Client> getById(@PathVariable Long id) {
+	public ResponseEntity<ClientDTO> getById(@PathVariable Long id) {
 		Optional<Client> client = repository.findById(id);
 
 		if (client.isPresent()) {
-			return ResponseEntity.ok(client.get());
+			return ResponseEntity.ok(this.toModel(client.get()));
 		} else {
 			return ResponseEntity.notFound().build();
 		}
@@ -93,5 +99,13 @@ public class ClientController {
 		}
 		repository.save(client);
 		return ResponseEntity.ok(repository.findById(id).get());
+	}
+	
+	private ClientDTO toModel(Client client) {
+		return modelMapper.map(client, ClientDTO.class);
+	}
+	
+	private List<ClientDTO> toCollectionModel(List<Client> list) {
+		return list.stream().map(client -> this.toModel(client)).collect(Collectors.toList());
 	}
 }
