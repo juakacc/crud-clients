@@ -8,10 +8,6 @@ import javax.validation.Valid;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.clients.dto.ClientDTO;
 import com.clients.model.Client;
 import com.clients.repository.ClientRepository;
+import com.clients.service.ClientService;
 
 @RestController
 @RequestMapping("/clientes")
@@ -35,6 +32,9 @@ public class ClientController {
 
 	@Autowired
 	private ClientRepository repository;
+	
+	@Autowired
+	private ClientService service;
 	
 	@Autowired
 	private ModelMapper modelMapper;
@@ -46,18 +46,14 @@ public class ClientController {
 			@RequestParam(defaultValue = "0") int page, 
 			@RequestParam(defaultValue = "5") int size) {
 		
-		Pageable pageable = PageRequest.of(page, size, Sort.by(Order.asc("nome")));
-		
-		if (nome != null || cpf != null)
-			return ResponseEntity.ok(this.toCollectionModel(repository.search(nome, cpf, pageable).getContent()));
-		else 
-			return ResponseEntity.ok(this.toCollectionModel(repository.findAll(pageable).getContent()));
+		List<Client> clients = service.listClients(nome, cpf, page, size);
+		return ResponseEntity.ok(this.toCollectionModel(clients));
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<ClientDTO> getById(@PathVariable Long id) {
 		Optional<Client> client = repository.findById(id);
-
+		
 		if (client.isPresent()) {
 			return ResponseEntity.ok(this.toModel(client.get()));
 		} else {
@@ -83,37 +79,23 @@ public class ClientController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<Client> update(@PathVariable Long id, @RequestBody @Valid Client client) {
-
-		if (!repository.existsById(id)) {
+	public ResponseEntity<ClientDTO> update(@PathVariable Long id, @RequestBody @Valid Client client) {
+		Client clientUpdated = service.updateClient(id, client);
+		
+		if (clientUpdated == null)
 			return ResponseEntity.notFound().build();
-		}
-		client.setId(id);
-		repository.save(client);
-
-		return ResponseEntity.ok(repository.findById(id).get());
+		else
+			return ResponseEntity.ok(this.toModel(clientUpdated));		
 	}
 
 	@PatchMapping("/{id}")
-	public ResponseEntity<Client> updatePartial(@PathVariable Long id, @RequestBody Client params) {
-		if (!repository.existsById(id)) {
+	public ResponseEntity<ClientDTO> updatePartial(@PathVariable Long id, @RequestBody Client params) {
+		Client clientUpdated = service.updatePartialClient(id, params);
+		
+		if (clientUpdated == null)
 			return ResponseEntity.notFound().build();
-		}
-		Client client = repository.findById(id).get();
-		
-		if (params.getNome() != null && params.getNome().trim().length() > 0) {
-			client.setNome(params.getNome());
-		}
-		
-		if (params.getCpf() != null && params.getCpf().trim().length() == 11) {
-			client.setCpf(params.getCpf());
-		}
-		
-		if (params.getDataNascimento() != null) {
-			client.setDataNascimento(params.getDataNascimento());
-		}
-		repository.save(client);
-		return ResponseEntity.ok(repository.findById(id).get());
+		else
+			return ResponseEntity.ok(this.toModel(clientUpdated));
 	}
 	
 	private ClientDTO toModel(Client client) {
