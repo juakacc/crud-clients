@@ -8,6 +8,10 @@ import javax.validation.Valid;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.clients.dto.ClientDTO;
@@ -35,8 +40,19 @@ public class ClientController {
 	private ModelMapper modelMapper;
 
 	@GetMapping
-	public ResponseEntity<List<ClientDTO>> list() {
-		return ResponseEntity.ok(this.toCollectionModel(repository.findAll()));
+	public ResponseEntity<List<ClientDTO>> list(
+			@RequestParam(required = false) String cpf,
+			@RequestParam(required = false) String nome,			
+			@RequestParam(required = false, defaultValue = "0") int page, 
+			@RequestParam(required = false, defaultValue = "5") int size) {
+		
+		Pageable pageable = PageRequest.of(page, size, Sort.by(Order.asc("nome")));
+
+		if (cpf != null) {
+			return ResponseEntity.ok(this.toCollectionModel(repository.findByCpf(cpf)));
+		}
+		
+		return ResponseEntity.ok(this.toCollectionModel(repository.findAll(pageable).getContent()));
 	}
 
 	@GetMapping("/{id}")
