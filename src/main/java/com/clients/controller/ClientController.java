@@ -43,16 +43,15 @@ public class ClientController {
 	public ResponseEntity<List<ClientDTO>> list(
 			@RequestParam(required = false) String cpf,
 			@RequestParam(required = false) String nome,			
-			@RequestParam(required = false, defaultValue = "0") int page, 
-			@RequestParam(required = false, defaultValue = "5") int size) {
+			@RequestParam(defaultValue = "0") int page, 
+			@RequestParam(defaultValue = "5") int size) {
 		
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Order.asc("nome")));
-
-		if (cpf != null) {
-			return ResponseEntity.ok(this.toCollectionModel(repository.findByCpf(cpf)));
-		}
 		
-		return ResponseEntity.ok(this.toCollectionModel(repository.findAll(pageable).getContent()));
+		if (nome != null || cpf != null)
+			return ResponseEntity.ok(this.toCollectionModel(repository.search(nome, cpf, pageable).getContent()));
+		else 
+			return ResponseEntity.ok(this.toCollectionModel(repository.findAll(pageable).getContent()));
 	}
 
 	@GetMapping("/{id}")
