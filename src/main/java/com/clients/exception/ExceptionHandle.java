@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -22,6 +24,15 @@ public class ExceptionHandle extends ResponseEntityExceptionHandler {
 	
 	@Autowired
 	private MessageSource messageSource;
+	
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<Object> handleException(DataIntegrityViolationException ex, WebRequest request) {
+		
+		List<Error> errors = new ArrayList<>();
+		errors.add(new Error("", ex.getRootCause().getMessage()));
+		
+		return super.handleExceptionInternal(ex, errors, new HttpHeaders(), HttpStatus.CONFLICT, request);
+	}
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
@@ -45,32 +56,5 @@ public class ExceptionHandle extends ResponseEntityExceptionHandler {
 		errors.add(new Error("", ex.getRootCause().getMessage()));
 		
 		return super.handleExceptionInternal(ex, errors, headers, status, request);
-	}
-
-	public class Error {
-		private String field;
-		private String error;
-
-		public Error(String field, String error) {
-			super();
-			this.field = field;
-			this.error = error;
-		}
-
-		public String getField() {
-			return field;
-		}
-
-		public void setField(String field) {
-			this.field = field;
-		}
-
-		public String getError() {
-			return error;
-		}
-
-		public void setError(String error) {
-			this.error = error;
-		}
-	}
+	}	
 }
