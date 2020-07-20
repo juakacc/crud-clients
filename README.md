@@ -51,6 +51,12 @@ Exemplo de chamada à API:
 
 http://localhost:8080/clientes?page=0&size=5&nome=jack&cpf=12345678900
 
-##Contribuições
+## Contribuições
 
 Sinta-se a vontade para contribuir. :)
+
+## Dúvidas/Ajuda
+
+Qualquer dúvida sobre a executação ou configuração do projeto é só entrar em contato, será um prazer ajudá-lo:
+
+E-mail: juakacc@gmail.com
