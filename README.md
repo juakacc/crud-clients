@@ -2,6 +2,23 @@
 
 API Rest para consumir recursos, dados dos clientes cadastrados: _id_, _nome_, _CPF_ e _data de nascimento_.
 
+## Configurando Banco de dados
+
+Como foi solicidado na descrição do projeto, o mesmo está configurado utilizando o Docker.
+
+```shell
+# Baixe a imagem do DockerHub
+$ docker pull juakacc/clientapibd:latest
+```
+
+```shell
+# Execute a imagem
+$ docker run --publish 3308:3306 --detach --name clientapidb juakacc/clientapibd:latest
+```
+
+**Obs:** No caso do comando acima o acesso ao banco de dados será realizado por meio da porta `3308` do container.
+Caso essa porta esteja em uso na sua máquina, altera para uma disponível, com isso é necessário também alterar a porta no arquivo `src/main/resources/application.properties`, para que a API acesse o banco corretamente.
+
 ## Executando localmente
 
 ```shell
@@ -30,7 +47,7 @@ A rota para listagem de clientes pode receber alguns parâmetros, na forma de qu
 - `nome`: **String** - parte do nome do cliente _(opcional)_;
 - `cpf`: **String** - parte do CPF do cliente _(opcional)_.
 
-Exemplo de chamada a API:
+Exemplo de chamada à API:
 
 http://localhost:8080/clientes?page=0&size=5&nome=jack&cpf=12345678900
 
